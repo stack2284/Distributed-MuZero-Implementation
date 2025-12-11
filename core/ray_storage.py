@@ -30,10 +30,8 @@ class SharedStorage :
         
     
     def sample_batch(self):
-        """Trainer calls this to get a batch of data."""
         games_list = list(self.buffer.values())
         
-        # Wait until we have enough data
         if len(games_list) < self.config.batch_size:
             return None
 
@@ -51,7 +49,6 @@ class SharedStorage :
                 game_pos = np.random.choice(game_len - self.config.num_unroll_steps)
             else:
                 game_pos = 0
-            # Append TUPLE (Game, index)
             batch.append((game, game_pos))
             
         return batch

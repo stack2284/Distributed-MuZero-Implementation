@@ -2,7 +2,6 @@ import ray
 import torch 
 import numpy as np 
 
-# from muzero_model import MuZeroNetwork 
 from core.networks import MuZeroNetwork
 from core.game import Game 
 from core.mcts import MCTS , Node , MinMaxStats 

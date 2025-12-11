@@ -11,7 +11,6 @@ class RayTrainer:
         self.config = config
         self.model = MuZeroNetwork(config.observation_shape, config.action_space_size)
         
-        # --- AUTO-DETECT DEVICE ---
         if torch.backends.mps.is_available():
             self.device = torch.device("mps")
         elif torch.cuda.is_available():
@@ -64,22 +63,20 @@ class RayTrainer:
             for k in range(self.config.num_unroll_steps):
                 target_index = start_index + k
                 
-                # A. Predict
+                # Predict
                 policy_logits, value_pred = self.model.prediction(hidden_state)
                 
-                # B. Targets
+                # Targets
                 target_value, target_reward, target_policy = game.make_target(
                     target_index, self.config.num_unroll_steps, self.config.td_steps, self.config.discount
                 )
                 
-                # --- FIX 1: Tensor creation on Device ---
                 t_value = torch.tensor(target_value, dtype=torch.float32, device=self.device)
                 
-                # --- FIX 2: UNSQUEEZE POLICY TARGET ---
                 # Changes shape from [2] to [1, 2] to match policy_logits
                 t_policy = torch.tensor(target_policy, dtype=torch.float32, device=self.device).unsqueeze(0)
                 
-                # C. Loss
+                # Loss
                 v_loss = F.mse_loss(value_pred.squeeze(), t_value)
                 p_loss = F.cross_entropy(policy_logits, t_policy)
                 
@@ -90,7 +87,7 @@ class RayTrainer:
                 value_loss_sum += v_loss.item()
                 policy_loss_sum += p_loss.item()
 
-                # D. Dynamics
+                # Dynamics
                 if k < self.config.num_unroll_steps - 1:
                     if target_index < len(game.history["actions"]):
                         action_id = game.history["actions"][target_index] 

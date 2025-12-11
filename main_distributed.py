@@ -27,11 +27,9 @@ if __name__ == "__main__":
     print("--> Starting Storage Actor...", flush=True)
     storage = SharedStorage.remote(config)
     
-    # --- FIX: Pass specific arguments instead of just 'config' ---
     print("--> Setting Initial Weights...", flush=True)
     temp_model = MuZeroNetwork(config.observation_shape, config.action_space_size)
     
-    # Extract weights manually since we didn't change your networks.py
     cpu_weights = {k: v.cpu() for k, v in temp_model.state_dict().items()}
     ray.get(storage.set_weights.remote(cpu_weights))
     
